@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "common.h"
 
+float Average(Mat src);
+float Deviation(Mat src, float avr);
 
 void testOpenImage()
 {
@@ -419,6 +421,63 @@ void showHistogram(const std::string& name, int* hist, const int  hist_cols, con
 	imshow(name, imgHist);
 }
 
+/********************************************************** BIT IMAGE *******************************************************************/
+
+void bitImage() {
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+		Mat bitImg = src.clone();
+		int height = src.rows;
+		int width = src.cols;
+		float average = Average(src);
+		float deviation = Deviation(src, average);
+		int k1 = 1, k2 = -1;
+		int threshold = (int)(k1*average+k2*deviation);
+	
+
+		for (int i = 0; i < height; i++)
+			for (int j = 0; j < width; j++) {
+				if (src.at<uchar>(i, j) <= threshold) {
+					bitImg.at<uchar>(i, j) = 255;
+				}
+				else {
+					bitImg.at<uchar>(i, j) = 0;
+				}
+
+			}
+
+		imshow("input image", src);
+		imshow("bit image", bitImg);
+		waitKey(0);
+	}
+}
+
+float Average(Mat src) {
+	int sum = 0;
+	int height = src.rows;
+	int width = src.cols;
+
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			sum += src.at<uchar>(i, j);
+		}
+	return (float)sum/(float)(height*width);
+}
+
+float Deviation(Mat src, float avr) {
+	float sum = 0;
+	int height = src.rows;
+	int width = src.cols;
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			sum += (src.at<uchar>(i, j)-avr)* (src.at<uchar>(i, j) - avr);
+		}
+
+	return sqrt(sum / (float)(height * width));
+}
+
 int main()
 {
 	int op;
@@ -435,7 +494,7 @@ int main()
 		printf(" 6 - Canny edge detection\n");
 		printf(" 7 - Edges in a video sequence\n");
 		printf(" 8 - Snap frame from live video\n");
-		printf(" 9 - Mouse callback demo\n");
+		printf(" 9 - Bit Image\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d",&op);
@@ -467,7 +526,7 @@ int main()
 				testSnap();
 				break;
 			case 9:
-				testMouseClick();
+				bitImage();
 				break;
 		}
 	}
