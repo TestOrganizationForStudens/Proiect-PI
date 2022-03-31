@@ -454,6 +454,27 @@ void bitImage() {
 	}
 }
 
+void bitImage1(Mat src, Mat* bitImg) {
+	*bitImg = src.clone();
+	int height = src.rows;
+	int width = src.cols;
+	float average = Average(src);
+	float deviation = Deviation(src, average);
+	int k1 = 1, k2 = -1;
+	int threshold = (int)(k1 * average + k2 * deviation);
+
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			if (src.at<uchar>(i, j) <= threshold) {
+				bitImg->at<uchar>(i, j) = 255;
+			}
+			else {
+				bitImg->at<uchar>(i, j) = 0;
+			}
+		}
+}
+
+
 float Average(Mat src) {
 	int sum = 0;
 	int height = src.rows;
@@ -483,114 +504,72 @@ void paintNeighbors(Mat* src2, int i, int j) {
 	int width = src2->cols;
 	int aux1 = 1;
 
-	//printf("Ok, Print\n");
 	for (int k = -aux1; k <= aux1; ++k)
 		for (int r = -aux1; r <= aux1; ++r) {
 			if (i + k >= 0 && i + k < height && j + r >= 0 && j + r < width) {
 				src2->at<uchar>(i + k, j + r) = 0;
 			}
 		}
+}
 
+void dilatare1(Mat src, Mat * src2) {
+	int height = src.rows;
+	int width = src.cols;
+	int maxValue = 220;
+
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			src2->at<uchar>(i, j) = 255;
+		}
+
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+
+			if (src.at<uchar>(i, j) < maxValue) {
+				paintNeighbors(src2, i, j);
+			}
+		}
 }
 
 void dilatare() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+	
 	Mat src2 = src.clone();
-	int height = src.rows;
-	int width = src.cols;
-	int trashhold = 127;
+	bitImage1(src, &src2);
+	
+	Mat src3 = src.clone();
+	dilatare1(src2, &src3);
 
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-			src2.at<uchar>(i, j) = 255;
-		}
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-
-			if (src.at<uchar>(i, j) < trashhold) {
-				paintNeighbors(&src2, i, j);
-			}
-		}
-
-	imshow("First Image", src);
-	imshow("test", src2);
+	imshow("Initial Image", src);
+	imshow("bitImage", src2);
+	imshow("dilatare", src3);
 	waitKey(0);
 }
 
-void dilatare1(Mat src, Mat* src2) {
-	int height = src.rows;
-	int width = src.cols;
-	int trashhold = 127;
 
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-			src2->at<uchar>(i, j) = 255;
-		}
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-
-			if (src.at<uchar>(i, j) < trashhold) {
-				paintNeighbors(src2, i, j);
-			}
-		}
-}
 
 bool checkNeighbors(Mat* src2, int i, int j) {
 	int height = src2->rows;
 	int width = src2->cols;
-	int trashold = 127;
+	int maxValue = 220;
 	int aux1 = 1;
 
 	for (int k = -aux1; k <= aux1; ++k)
 		for (int r = -aux1; r <= aux1; ++r) {
 			if (i + k >= 0 && i + k < height && j + r >= 0 && j + r < width) {
-				if (src2->at<uchar>(i + k, j + r) > trashold)
+				if (src2->at<uchar>(i + k, j + r) > maxValue)
 					return false;
 			}
 		}
 	return true;
 }
 
-void eroziunea() {
-	char fname[MAX_PATH];
-	openFileDlg(fname);
-	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat src2 = src.clone();
-	int height = src.rows;
-	int width = src.cols;
-	int trashhold = 100;
-
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-			src2.at<uchar>(i, j) = 255;
-		}
-
-	for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++) {
-
-			if (src.at<uchar>(i, j) < trashhold) {
-				if (checkNeighbors(&src, i, j)) {
-					src2.at<uchar>(i, j) = 0;
-				}
-			}
-		}
-
-	imshow("First Image", src);
-	imshow("test", src2);
-	waitKey(0);
-}
-
 void eroziunea1(Mat src, Mat* src2) {
 	int height = src.rows;
 	int width = src.cols;
-	int trashhold = 100;
+	int maxValue = 220;
 
 
 	for (int i = 0; i < height; i++)
@@ -601,7 +580,7 @@ void eroziunea1(Mat src, Mat* src2) {
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
 
-			if (src.at<uchar>(i, j) < trashhold) {
+			if (src.at<uchar>(i, j) < maxValue) {
 				if (checkNeighbors(&src, i, j)) {
 					src2->at<uchar>(i, j) = 0;
 				}
@@ -609,17 +588,41 @@ void eroziunea1(Mat src, Mat* src2) {
 		}
 }
 
+void eroziunea() {
+	char fname[MAX_PATH];
+	openFileDlg(fname);
+	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+
+	Mat src2 = src.clone();
+	bitImage1(src, &src2);
+
+	Mat src3 = src.clone();
+	eroziunea1(src2, &src3);
+
+	imshow("Initial Image", src);
+	imshow("bitImage", src2);
+	imshow("eroziune", src3);
+	waitKey(0);
+}
+
+
+
 void deschiderea() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+	
+	Mat src1 = src.clone();
+	bitImage1(src, &src1);
 	Mat src2 = src.clone();
 	Mat src3 = src.clone();
-	eroziunea1(src, &src2);
+
+	eroziunea1(src1, &src2);
 	dilatare1(src2, &src3);
 
-	imshow("First Image", src);
-	imshow("test", src3);
+	imshow("Initial Image", src);
+	imshow("bitImage", src1);
+	imshow("deschidere", src3);
 	waitKey(0);
 }
 
@@ -627,13 +630,19 @@ void inchiderea() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+
+	Mat src1 = src.clone();
+	bitImage1(src, &src1);
 	Mat src2 = src.clone();
 	Mat src3 = src.clone();
-	dilatare1(src, &src2);
+
+
+	dilatare1(src1, &src2);
 	eroziunea1(src2, &src3);
 
-	imshow("First Image", src);
-	imshow("test", src3);
+	imshow("Initial Image", src);
+	imshow("bitImage", src1);
+	imshow("inchidere", src3);
 	waitKey(0);
 }
 
@@ -668,9 +677,9 @@ void extragereaConturului() {
 }
 
 void extragereaConturului1(Mat src, Mat* src3) {
-	char fname[MAX_PATH];
-	openFileDlg(fname);
-	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
+	//char fname[MAX_PATH];
+	//openFileDlg(fname);
+	//Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
 	Mat src2 = src.clone();
 	*src3 = src.clone();
 	eroziunea1(src, &src2);
@@ -699,10 +708,10 @@ void umplereaRegiunilor() {
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
 
-	Mat* contur;
+	Mat* contur=NULL;/////
 	extragereaConturului1(src, contur);
 
-	Mat* complementContur;
+	Mat* complementContur=NULL;///
 	complement(*contur, complementContur);
 
 	Mat result = src.clone();
@@ -742,7 +751,7 @@ int main()
 		printf(" 11 - eroziunea\n");
 		printf(" 12 - deschiderea\n");
 		printf(" 13 - inchiderearea\n");
-		printf(" 14 - extragerea conturului\n");
+		//printf(" 14 - extragerea conturului\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d",&op);
