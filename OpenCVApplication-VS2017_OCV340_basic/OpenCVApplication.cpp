@@ -498,7 +498,159 @@ float Deviation(Mat src, float avr) {
 
 	return sqrt(sum / (float)(height * width));
 }
+void fill_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, int i, int j, int trashold=100)
+{
 
+	int is = Structural.rows / 2;
+	int js = Structural.cols / 2;
+
+	int minimum = 256;
+
+	for (int i2 = -Structural.rows / 2; i2 < Structural.rows / 2; i2++)
+		for (int j2 = -Structural.cols / 2; j2 < Structural.cols / 2; j2++)
+		{
+
+
+			if (Structural.at<uchar>(is + i2, js + j2) <= trashold)
+
+				if (i + i2 >= 0 && j + j2 >= 0 && i + i2 < OriginalImage.rows && j + j2 < OriginalImage.cols)
+				minimum = min(minimum, OriginalImage.at<uchar>(i + i2, j + j2));
+
+		}
+	(*DestinationOmage).at<uchar>(i,j) = minimum;
+}
+
+
+
+
+void check_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, int i, int j, int trashold = 100, int object = 0)
+{
+
+	int is = Structural.rows / 2;
+	int js = Structural.cols / 2;
+
+	int maxim = -1;
+	if (OriginalImage.at<uchar>(i, j) > trashold)
+		return;
+
+	for (int i2 = -Structural.rows / 2; i2 < Structural.rows / 2; i2++)
+		for (int j2 = -Structural.cols / 2; j2 < Structural.cols / 2; j2++)
+		{
+
+
+			if (i + i2 < 0 || j + j2 < 0 || i + i2 >= OriginalImage.rows || j + j2 >= OriginalImage.cols)
+				maxim = 255;
+
+
+			maxim = max(Structural.at<uchar>(is + i2, js + j2), maxim);
+
+
+
+		}
+
+	(*DestinationOmage).at<uchar>(i, j) = maxim;
+
+
+}
+
+
+
+
+
+void dilatarea(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
+{
+
+	(*ImgDestination) = Mat(imgA.rows, imgA.cols, CV_8UC1);
+
+	for (int i = 0; i < imgA.rows; i++)
+		for (int j = 0; j < imgA.cols; j++)
+			(*ImgDestination).at<uchar>(i, j) = fundal;
+
+
+	for (int i = 0; i < imgA.rows; i++)
+		for (int j = 0; j < imgA.cols; j++)
+			fill_neighbours2(imgA, ImgDestination, imgB, i, j, trashold);
+
+//	imshow("before dilatation", imgA);
+//	imshow("dilatated", (*ImgDestination));
+
+}
+
+
+
+
+
+
+
+
+void eroziunea(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
+{
+
+	(*ImgDestination) = Mat(imgA.rows, imgA.cols, CV_8UC1);
+	for (int i = 0; i < imgA.rows; i++)
+		for (int j = 0; j < imgA.cols; j++)
+			(*ImgDestination).at<uchar>(i, j) = fundal;
+
+
+	for (int i = 0; i < imgA.rows; i++)
+		for (int j = 0; j < imgA.cols; j++)
+			check_neighbours2(imgA, ImgDestination, imgB, i, j, trashold, object);
+
+//	imshow("before erosion", imgA);
+//	imshow("before erosion", imgB);
+//	imshow("eroted", *ImgDestination);
+
+}
+
+void scadere(Mat ImgA, Mat ImgB, Mat* diff, int trashold = 100, int fundal = 255, int object = 0)
+{
+
+	(*diff) = Mat(ImgA.rows, ImgA.cols, CV_8UC1);
+
+
+	for (int i = 0; i < ImgA.rows; i++)
+		for (int j = 0; j < ImgA.cols; j++)
+		{
+		
+				(*diff).at<uchar>(i, j) = 255+(ImgA.at<uchar>(i, j) - ImgB.at<uchar>(i, j));
+
+		}
+
+}
+
+
+void inchidere(Mat ImgA, Mat Satructural, Mat* Inchidere, int trashhold = 100, int fundal = 255, int object = 0)
+{
+
+
+
+	Mat ImgDilatation;
+	Mat ImgErosion;
+	dilatarea(ImgA, Satructural, &ImgDilatation, trashhold, fundal, object);
+	eroziunea(ImgDilatation, Satructural, &ImgErosion, trashhold, fundal, object);
+
+//	imshow("before inchidere A", ImgA);
+//	imshow("before dinchidere B", Satructural);
+//	imshow("inchidere", ImgErosion);
+	(*Inchidere) = ImgErosion;
+}
+
+void deschidere(Mat ImgA, Mat Satructural, Mat* Deschidere, int trashhold = 100, int fundal = 255, int object = 0)
+{
+
+
+	Mat ImgDilatation;
+	Mat ImgErosion;
+	eroziunea(ImgA, Satructural, &ImgErosion, trashhold, fundal, object);
+	dilatarea(ImgErosion, Satructural, &ImgDilatation, trashhold, fundal, object);
+
+	imshow("before deschidere A", ImgA);
+	imshow("before dinchidere B", Satructural);
+	imshow("deschidere", ImgDilatation);
+	(*Deschidere) = ImgDilatation;
+
+}
+/*
 void paintNeighbors(Mat* src2, int i, int j) {
 	int height = src2->rows;
 	int width = src2->cols;
@@ -661,6 +813,13 @@ void scadere(Mat src, Mat* src2, Mat* result) {
 		}
 }
 
+
+
+
+
+
+
+
 void extragereaConturului() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
@@ -686,6 +845,118 @@ void extragereaConturului1(Mat src, Mat* src3) {
 	scadere(src, &src2, src3);
 }
 
+*/
+void BuildStructuralElement8(int rows, int cols, Mat* Structural, int object = 0)
+{
+
+	(*Structural) = Mat(rows, cols, CV_8UC1);
+
+	for (int i = 0; i < rows; i++)
+		for (int j = 0; j < cols; j++)
+			(*Structural).at<uchar>(i, j) = object;
+
+}
+void BuildStructuralElement4(int rows, int cols, Mat* Structural, int object = 0, int fundal = 255)
+{
+
+	(*Structural) = Mat(rows, cols, CV_8UC1);
+
+	for (int i = 0; i < rows; i++)
+		for (int j = 0; j < cols; j++)
+			(*Structural).at<uchar>(i, j) = fundal;
+
+	for (int i = 0; i < rows; i++)
+		for (int j = 0; j < cols; j++)
+			if (i == rows / 2 || j == cols / 2)
+				(*Structural).at<uchar>(i, j) = object;
+
+}
+
+
+void testErosion()
+{
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src;
+		src = imread(fname, IMREAD_GRAYSCALE);
+		imshow("image", src);
+		Mat structural;
+
+		BuildStructuralElement8(11, 11, &structural);
+		Mat iesire;
+		eroziunea(src, structural, &iesire);
+		waitKey();
+
+	}
+
+
+}
+
+
+
+
+
+
+void tesDilatation()
+{
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src;
+		src = imread(fname, IMREAD_GRAYSCALE);
+		imshow("image", src);
+		Mat structural;
+
+		BuildStructuralElement8(11, 11, &structural);
+		Mat iesire;
+		dilatarea(src, structural, &iesire);
+		waitKey();
+
+	}
+
+
+}
+
+
+void testInchidere()
+{
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src;
+		src = imread(fname, IMREAD_GRAYSCALE);
+		imshow("image", src);
+		Mat structural;
+
+		BuildStructuralElement8(7, 7, &structural);
+		Mat iesire;
+		inchidere(src, structural, &iesire);
+		waitKey();
+
+	}
+
+
+}
+void TopHat(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
+{
+	Mat Deschidere;
+	Mat Scadere;
+	deschidere(imgA, imgB, &Deschidere, trashold, fundal, 0);
+	scadere(imgA, Deschidere, &Scadere, trashold, fundal, 0);
+	(*ImgDestination) = Scadere;
+
+}
+void BottomHat(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
+{
+
+	Mat Inchidere;
+	Mat Scadere;
+	inchidere(imgA, imgB, &Inchidere, trashold, fundal, 0);
+	scadere(Inchidere, imgA, &Scadere, trashold, fundal, 0);
+	(*ImgDestination) = Scadere;
+
+}
 
 void complement(Mat src, Mat* src2) {
 	int height = src.rows;
@@ -702,7 +973,7 @@ void complement(Mat src, Mat* src2) {
 void choosPointInside(Mat cont, int* i, int* j) {
 
 }
-
+/*
 void umplereaRegiunilor() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
@@ -728,84 +999,89 @@ void umplereaRegiunilor() {
 		}
 }
 
+*/
+
 
 
 int main()
 {
 	int op;
-	do
-	{
-		system("cls");
-		destroyAllWindows();
-		printf("Menu:\n");
-		printf(" 1 - Open image\n");
-		printf(" 2 - Open BMP images from folder\n");
-		printf(" 3 - Image negative - diblook style\n");
-		printf(" 4 - BGR->HSV\n");
-		printf(" 5 - Resize image\n");
-		printf(" 6 - Canny edge detection\n");
-		printf(" 7 - Edges in a video sequence\n");
-		printf(" 8 - Snap frame from live video\n");
-		printf(" 9 - Bit Image\n");
-		printf(" 10 - dilatare\n");
-		printf(" 11 - eroziunea\n");
-		printf(" 12 - deschiderea\n");
-		printf(" 13 - inchiderearea\n");
-		//printf(" 14 - extragerea conturului\n");
-		printf(" 0 - Exit\n\n");
-		printf("Option: ");
-		scanf("%d",&op);
-		switch (op)
+	int ce;
+	int imgRows = 3;
+	int imgCols = 3;
+	Mat Original;
+	Mat ElementStructural;
+	printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
+	scanf("%d", &ce);
+	if(ce==1)
+   BuildStructuralElement4(imgRows, imgCols, &ElementStructural);
+	else
+	if(ce==2)
+   BuildStructuralElement8(imgRows, imgCols, &ElementStructural);
+
+		char fname[MAX_PATH];
+		while (openFileDlg(fname))
 		{
-			case 1:
-				testOpenImage();
-				break;
-			case 2:
-				testOpenImagesFld();
-				break;
-			case 3:
-				testParcurgereSimplaDiblookStyle(); //diblook style
-				break;
-			case 4:
-				//testColor2Gray();
-				testBGR2HSV();
-				break;
-			case 5:
-				testResize();
-				break;
-			case 6:
-				testCanny();
-				break;
-			case 7:
-				testVideoSequence();
-				break;
-			case 8:
-				testSnap();
-				break;
-			case 9:
-				bitImage();
-				break;
-			case 10:
-				dilatare();
-				break;
 
-			case 11:
-				eroziunea();
-				break;
+			Original = imread(fname, IMREAD_GRAYSCALE);
+			imshow("image", Original);
+			waitKey();
 
-			case 12:
-				deschiderea();
-				break;
+			system("cls");
+			printf("1 TopHat pipeline\n");
+			printf("2 BottomHat pipeline\n");
+			scanf("%d", &op);
 
-			case 13:
-				inchiderea();
-				break;
+			Mat Transformed;
+			Mat Binarised;
+			if (op == 1)
+			{
+				
+				TopHat(Original, ElementStructural, &Transformed);
+				
+				//bitImage1(Transformed, &Binarised);
+				imshow("original", Original);
+				imshow("top hat", Transformed);
+				//imshow("binarized", Binarised);
+			}
+			else
+			if (op == 2)
+			{
 
-			case 14:
-				extragereaConturului();
-				break;
+				
+				BottomHat(Original, ElementStructural, &Transformed);
+				//bitImage1(Transformed, &Binarised);
+				imshow("original", Original);
+				imshow("bottom hat", Transformed);
+				//imshow("binarized", Binarised);
+			 }
+		/*	int op2;
+			printf("1 Inchidere\n");
+			printf("2 Deschidere\n");
+			scanf("%d", &op2);
+			if (op2 == 1)
+			{
+				Mat Inchidere;
+				inchidere(Binarised, ElementStructural, &Inchidere);
+				imshow("closed", Inchidere);
+				waitKey();
+			}
+			else
+			if (op2 == 2)
+			{
+				Mat Deschidere;
+				deschidere(Binarised, ElementStructural, &Deschidere);
+				imshow("opened", Deschidere);
+				waitKey();
+
+
+			}
+
+         */
+			waitKey();
+
+
 		}
-	}
-	while (op!=0);
+
 	return 0;
 }
