@@ -512,7 +512,6 @@ void fill_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, 
 
 
 			if (Structural.at<uchar>(is + i2, js + j2) <= trashold)
-
 				if (i + i2 >= 0 && j + j2 >= 0 && i + i2 < OriginalImage.rows && j + j2 < OriginalImage.cols)
 				minimum = min(minimum, OriginalImage.at<uchar>(i + i2, j + j2));
 
@@ -538,8 +537,8 @@ void check_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural,
 		{
 
 
-		 if (i + i2 < 0 || j + j2 < 0 || i + i2 >= OriginalImage.rows || j + j2 >= OriginalImage.cols)
-			maxim = 255;
+			if (i + i2 < 0 || j + j2 < 0 || i + i2 >= OriginalImage.rows || j + j2 >= OriginalImage.cols)
+				continue;
 			else
 		if(Structural.at<uchar>(is+i2,js+j2)< trashold)
 		    maxim = max(OriginalImage.at<uchar>(i + i2, j + j2), maxim);
@@ -645,9 +644,13 @@ void scadere(Mat ImgA, Mat ImgB, Mat* diff, int trashold = 100, int fundal = 255
 	for (int i = 0; i < ImgA.rows; i++)
 		for (int j = 0; j < ImgA.cols; j++)
 		{
-		
-				(*diff).at<uchar>(i, j) = (ImgA.at<uchar>(i, j) - ImgB.at<uchar>(i, j));
+		   // if(ImgA.at<uchar>(i, j)> ImgB.at<uchar>(i, j))
+		     
+				(*diff).at<uchar>(i, j)  =128- abs((int)ImgA.at<uchar>(i, j)- (int)ImgB.at<uchar>(i, j));
 
+
+
+			//(*diff).at<uchar>(i, j) = ImgB.at<uchar>(i, j) - ImgA.at<uchar>(i, j);
 		}
 
 }
@@ -1002,23 +1005,44 @@ void testInchidere()
 
 
 }
-void TopHat(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
+
+void TopHat2(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
 {
 	Mat Deschidere;
+	Mat Inchidere;
 	Mat Scadere;
-	deschidere2(imgA, imgB, &Deschidere, trashold, fundal, 0);
+	
+    deschidere2(imgA, imgB, &Deschidere, trashold, fundal, 0);
+	imshow("deshidere", Deschidere);
 	scadere(imgA, Deschidere, &Scadere, trashold, fundal, 0);
+	imshow("Scadere", Scadere);
+
 	(*ImgDestination) = Scadere;
 
 }
+
+
+
+
+
+
+
+
+
 void BottomHat(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fundal = 255, int object = 0)
 {
 
 	Mat Inchidere;
+	Mat Deschidere;
 	Mat Scadere;
+	Mat Scadere2;
+
 	inchidere2(imgA, imgB, &Inchidere, trashold, fundal, 0);
-	scadere(Inchidere, imgA, &Scadere, trashold, fundal, 0);
-	(*ImgDestination) = Scadere;
+	scadere(Inchidere, imgA, &Scadere2, trashold, fundal, 0);
+	imshow("inchidere", Inchidere);
+	//imshow("deschidere", Deschidere);
+	imshow("Scadere2", Scadere2);
+	(*ImgDestination) = Scadere2;
 
 }
 
@@ -1064,15 +1088,144 @@ void umplereaRegiunilor() {
 }
 
 */
+#include<queue>
+
+void neighbours(Mat img, int i, int j, std::queue<int>* Qi, std::queue<int>* Qj, Mat* labels,int label)
+{
+	
+	for(int k=-1;k<=1;k++)
+		for (int l = -1; l <= 1; l++)
+		{    if(k!=0 || l!=0)
+			if (i + k < img.rows && i + k >= 0 && j + l < img.cols && j + l >= 0)
+			{
+				if (img.at<uchar>(i + k, j + l) == 255 && (*labels).at<unsigned short>(i + k, j + l) == 0)
+				{
+					(*labels).at<unsigned short>(i + k, j + l) = label;
+					(*Qi).push(i + k);
+					(*Qj).push(j + l);
+				}
+			}
+		}
+
+}
+typedef struct 
+{
+	int label;
+    int count;
 
 
+}object;
+
+
+void etichetare(Mat img, Mat* labels)
+{
+	int label = 0;
+	(*labels) = Mat(img.rows, img.cols, CV_16UC1);
+	for (int i = 0; i < img.rows; i++)
+		for (int j = 0; j < img.cols; j++)
+			(*labels).at<unsigned short>(i, j) = 0;
+
+
+	for (int i = 0; i < img.rows; i++)
+		for (int j = 0; j < img.cols; j++)
+			if (img.at<uchar>(i, j) == 255 && (*labels).at<unsigned short>(i, j) == 0)
+			{
+				label++;
+				std::queue<int> Qi;
+				std::queue<int> Qj;
+				(*labels).at<unsigned short>(i, j) = label;
+				Qi.push(i);
+				Qj.push(j);
+				while (!Qi.empty() && !Qj.empty())
+				{
+					int qi = Qi.front();
+					int qj = Qj.front();
+					Qi.pop();
+					Qj.pop();
+					
+					neighbours(img, qi, qj, &Qi, &Qj, labels, label);
+				
+				}
+			}
+
+
+	printf("labels %d", label);
+	std::vector<object> objects;
+	for (int k = 1; k <= label; k++)
+	{
+		printf("%d\n", k);
+		int count = 0;
+		for (int i = 0; i < (*labels).rows; i++)
+			for (int j = 0; j < (*labels).cols; j++)
+			{
+				if ((*labels).at<unsigned short>(i, j) == k)
+				{
+					count++;
+				}
+
+			}
+		object obj1;
+		obj1.label = k;
+		obj1.count = count;
+		objects.push_back(obj1);
+	}
+
+	int maxime[30] = { 0 };
+	int maxlabel[30] = { 0 };
+	  
+	for (int i = 0; i < objects.size(); i++)
+	{
+		int assigned = 0;
+		int index = 0;
+		while (assigned == 0 && index < 30)
+		{
+			if (objects.at(i).count > maxime[index])
+			{
+				
+				for (int k = 28; k >= index; k--)
+				{
+					maxime[k + 1] = maxime[k];
+					maxlabel[k + 1] = maxlabel[k];
+				}
+				 maxime[index] = objects.at(i).count;
+				 maxlabel[index] = objects.at(i).label;
+				assigned = 1;
+			}
+			else
+				index++;
+		}
+	}
+	for (int i = 0; i < 30; i++)
+	{
+		printf("maxim %d with label %d and count %d \n", i, maxlabel[i], maxime[i]);
+
+    }
+		printf("object with maximum size label %d ,and count %d\n", maxlabel[0], maxime[0]);
+		Mat clone=Mat(img.rows, img.cols, CV_8UC1);
+		for (int i = 0; i < img.rows; i++)
+			for (int j = 0; j < img.cols; j++)
+				clone.at<uchar>(i, j) = 0;
+		for (int i = 0; i < img.rows; i++)
+			for (int j = 0; j < img.cols; j++)
+			{
+				for(int k=0;k<5;k++)
+				if ((*labels).at<unsigned short>(i, j) == maxlabel[k])
+				{
+					clone.at<uchar>(i, j) = 255;
+				}
+			}
+
+		imshow("object", clone);
+
+
+}
 
 int main()
 {
 	int op;
 	int ce;
-	int imgRows =5;
-	int imgCols =5;
+	int imgRows =8;
+	int imgCols =8;
 	Mat Original;
 	Mat ElementStructural;
 	printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
@@ -1098,6 +1251,7 @@ int main()
 			op = 1;
 			Mat Transformed;
 			Mat Transformed2;
+			Mat Transformed3;
 			Mat Binarised;
 			if (op == 1)
 			{
@@ -1105,12 +1259,26 @@ int main()
 			     
 				//eroziunea2(Original, ElementStructural, &Transformed);
 				Mat ElementStructural2;
-				BuildStructuralElement8(3, 3, &ElementStructural2);
-				TopHat(Original, ElementStructural, &Transformed);
+				Mat ElementStructural3;
+				BuildStructuralElement8(5, 5, &ElementStructural2);
+				TopHat2(Original, ElementStructural, &Transformed);
+		 
+			//TopHat2(Transformed, ElementStructural, &Transformed3);
+			//(Original, ElementStructural, &Transformed2);
+		    	BuildStructuralElement8(7, 7, &ElementStructural3);
+				dilatarea2(Transformed, ElementStructural3, &Transformed3);   TopHat2(Original, ElementStructural, &Transformed);
+				eroziunea2(Transformed3, ElementStructural3, &Transformed2);
 				bitImage1(Transformed, &Binarised);
+			 // TopHat(Transformed2, ElementStructural2, &Transformed3);
+			
 				imshow("original", Original);
 				imshow("top hat", Transformed);
 				imshow("binarized", Binarised);
+
+				Mat labels;
+				etichetare(Binarised, &labels);
+
+
 
 			}
 			else
@@ -1118,7 +1286,7 @@ int main()
 			{
 
 				
-				BottomHat(Original, ElementStructural, &Transformed);
+				//inchidere2(Original, ElementStructural, &Transformed);
 				//eroziunea2(Transformed, ElementStructural, &Transformed2);
 				bitImage1(Transformed, &Binarised);
 				imshow("original", Original);
