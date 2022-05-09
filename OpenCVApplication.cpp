@@ -4,17 +4,18 @@
 #include "stdafx.h"
 #include "common.h"
 
+
 float Average(Mat src);
 float Deviation(Mat src, float avr);
 
 void testOpenImage()
 {
 	char fname[MAX_PATH];
-	while(openFileDlg(fname))
+	while (openFileDlg(fname))
 	{
 		Mat src;
 		src = imread(fname);
-		imshow("image",src);
+		imshow("image", src);
 		waitKey();
 	}
 }
@@ -22,16 +23,16 @@ void testOpenImage()
 void testOpenImagesFld()
 {
 	char folderName[MAX_PATH];
-	if (openFolderDlg(folderName)==0)
+	if (openFolderDlg(folderName) == 0)
 		return;
 	char fname[MAX_PATH];
-	FileGetter fg(folderName,"bmp");
-	while(fg.getNextAbsFile(fname))
+	FileGetter fg(folderName, "bmp");
+	while (fg.getNextAbsFile(fname))
 	{
 		Mat src;
 		src = imread(fname);
-		imshow(fg.getFoundFileName(),src);
-		if (waitKey()==27) //ESC pressed
+		imshow(fg.getFoundFileName(), src);
+		if (waitKey() == 27) //ESC pressed
 			break;
 	}
 }
@@ -74,23 +75,23 @@ void testImageOpenAndSave()
 void testNegativeImage()
 {
 	char fname[MAX_PATH];
-	while(openFileDlg(fname))
+	while (openFileDlg(fname))
 	{
 		double t = (double)getTickCount(); // Get the current time [s]
-		
-		Mat src = imread(fname,CV_LOAD_IMAGE_GRAYSCALE);
+
+		Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
 		int height = src.rows;
 		int width = src.cols;
-		Mat dst = Mat(height,width,CV_8UC1);
+		Mat dst = Mat(height, width, CV_8UC1);
 		// Asa se acceseaaza pixelii individuali pt. o imagine cu 8 biti/pixel
 		// Varianta ineficienta (lenta)
-		for (int i=0; i<height; i++)
+		for (int i = 0; i < height; i++)
 		{
-			for (int j=0; j<width; j++)
+			for (int j = 0; j < width; j++)
 			{
-				uchar val = src.at<uchar>(i,j);
+				uchar val = src.at<uchar>(i, j);
 				uchar neg = 255 - val;
-				dst.at<uchar>(i,j) = neg;
+				dst.at<uchar>(i, j) = neg;
 			}
 		}
 
@@ -99,8 +100,8 @@ void testNegativeImage()
 		// Print (in the console window) the processing time in [ms] 
 		printf("Time = %.3f [ms]\n", t * 1000);
 
-		imshow("input image",src);
-		imshow("negative image",dst);
+		imshow("input image", src);
+		imshow("negative image", dst);
 		waitKey();
 	}
 }
@@ -118,13 +119,13 @@ void testParcurgereSimplaDiblookStyle()
 		double t = (double)getTickCount(); // Get the current time [s]
 
 		// the fastest approach using the “diblook style”
-		uchar *lpSrc = src.data;
-		uchar *lpDst = dst.data;
-		int w = (int) src.step; // no dword alignment is done !!!
-		for (int i = 0; i<height; i++)
+		uchar* lpSrc = src.data;
+		uchar* lpDst = dst.data;
+		int w = (int)src.step; // no dword alignment is done !!!
+		for (int i = 0; i < height; i++)
 			for (int j = 0; j < width; j++) {
-				uchar val = lpSrc[i*w + j];
-				lpDst[i*w + j] = 255 - val;
+				uchar val = lpSrc[i * w + j];
+				lpDst[i * w + j] = 255 - val;
 			}
 
 		// Get the current time again and compute the time difference [s]
@@ -132,8 +133,8 @@ void testParcurgereSimplaDiblookStyle()
 		// Print (in the console window) the processing time in [ms] 
 		printf("Time = %.3f [ms]\n", t * 1000);
 
-		imshow("input image",src);
-		imshow("negative image",dst);
+		imshow("input image", src);
+		imshow("negative image", dst);
 		waitKey();
 	}
 }
@@ -141,31 +142,31 @@ void testParcurgereSimplaDiblookStyle()
 void testColor2Gray()
 {
 	char fname[MAX_PATH];
-	while(openFileDlg(fname))
+	while (openFileDlg(fname))
 	{
 		Mat src = imread(fname);
 
 		int height = src.rows;
 		int width = src.cols;
 
-		Mat dst = Mat(height,width,CV_8UC1);
+		Mat dst = Mat(height, width, CV_8UC1);
 
 		// Asa se acceseaaza pixelii individuali pt. o imagine RGB 24 biti/pixel
 		// Varianta ineficienta (lenta)
-		for (int i=0; i<height; i++)
+		for (int i = 0; i < height; i++)
 		{
-			for (int j=0; j<width; j++)
+			for (int j = 0; j < width; j++)
 			{
-				Vec3b v3 = src.at<Vec3b>(i,j);
+				Vec3b v3 = src.at<Vec3b>(i, j);
 				uchar b = v3[0];
 				uchar g = v3[1];
 				uchar r = v3[2];
-				dst.at<uchar>(i,j) = (r+g+b)/3;
+				dst.at<uchar>(i, j) = (r + g + b) / 3;
 			}
 		}
-		
-		imshow("input image",src);
-		imshow("gray image",dst);
+
+		imshow("input image", src);
+		imshow("gray image", dst);
 		waitKey();
 	}
 }
@@ -195,12 +196,12 @@ void testBGR2HSV()
 		// definire pointer la matricea (24 biti/pixeli) a imaginii HSV
 		uchar* hsvDataPtr = hsvImg.data;
 
-		for (int i = 0; i<height; i++)
+		for (int i = 0; i < height; i++)
 		{
-			for (int j = 0; j<width; j++)
+			for (int j = 0; j < width; j++)
 			{
-				int hi = i*width * 3 + j * 3;
-				int gi = i*width + j;
+				int hi = i * width * 3 + j * 3;
+				int gi = i * width + j;
 
 				lpH[gi] = hsvDataPtr[hi] * 510 / 360;		// lpH = 0 .. 255
 				lpS[gi] = hsvDataPtr[hi + 1];			// lpS = 0 .. 255
@@ -220,18 +221,18 @@ void testBGR2HSV()
 void testResize()
 {
 	char fname[MAX_PATH];
-	while(openFileDlg(fname))
+	while (openFileDlg(fname))
 	{
 		Mat src;
 		src = imread(fname);
-		Mat dst1,dst2;
+		Mat dst1, dst2;
 		//without interpolation
-		resizeImg(src,dst1,320,false);
+		resizeImg(src, dst1, 320, false);
 		//with interpolation
-		resizeImg(src,dst2,320,true);
-		imshow("input image",src);
-		imshow("resized image (without interpolation)",dst1);
-		imshow("resized image (with interpolation)",dst2);
+		resizeImg(src, dst2, 320, true);
+		imshow("input image", src);
+		imshow("resized image (without interpolation)", dst1);
+		imshow("resized image (with interpolation)", dst2);
 		waitKey();
 	}
 }
@@ -239,17 +240,17 @@ void testResize()
 void testCanny()
 {
 	char fname[MAX_PATH];
-	while(openFileDlg(fname))
+	while (openFileDlg(fname))
 	{
-		Mat src,dst,gauss;
-		src = imread(fname,CV_LOAD_IMAGE_GRAYSCALE);
+		Mat src, dst, gauss;
+		src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
 		double k = 0.4;
 		int pH = 50;
-		int pL = (int) k*pH;
+		int pL = (int)k * pH;
 		GaussianBlur(src, gauss, Size(5, 5), 0.8, 0.8);
-		Canny(gauss,dst,pL,pH,3);
-		imshow("input image",src);
-		imshow("canny",dst);
+		Canny(gauss, dst, pL, pH, 3);
+		imshow("input image", src);
+		imshow("canny", dst);
 		waitKey();
 	}
 }
@@ -263,7 +264,7 @@ void testVideoSequence()
 		waitKey(0);
 		return;
 	}
-		
+
 	Mat edges;
 	Mat frame;
 	char c;
@@ -272,14 +273,14 @@ void testVideoSequence()
 	{
 		Mat grayFrame;
 		cvtColor(frame, grayFrame, CV_BGR2GRAY);
-		Canny(grayFrame,edges,40,100,3);
+		Canny(grayFrame, edges, 40, 100, 3);
 		imshow("source", frame);
 		imshow("gray", grayFrame);
 		imshow("edges", edges);
 		c = cvWaitKey(0);  // waits a key press to advance to the next frame
 		if (c == 27) {
 			// press ESC to exit
-			printf("ESC pressed - capture finished\n"); 
+			printf("ESC pressed - capture finished\n");
 			break;  //ESC pressed
 		};
 	}
@@ -298,7 +299,7 @@ void testSnap()
 	Mat frame;
 	char numberStr[256];
 	char fileName[256];
-	
+
 	// video resolution
 	Size capS = Size((int)cap.get(CV_CAP_PROP_FRAME_WIDTH),
 		(int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
@@ -326,7 +327,7 @@ void testSnap()
 		}
 
 		++frameNum;
-		
+
 		imshow(WIN_SRC, frame);
 
 		c = cvWaitKey(10);  // waits a key press to advance to the next frame
@@ -335,7 +336,7 @@ void testSnap()
 			printf("ESC pressed - capture finished");
 			break;  //ESC pressed
 		}
-		if (c == 115){ //'s' pressed - snapp the image to a file
+		if (c == 115) { //'s' pressed - snapp the image to a file
 			frameCount++;
 			fileName[0] = NULL;
 			sprintf(numberStr, "%d", frameCount);
@@ -343,7 +344,7 @@ void testSnap()
 			strcat(fileName, numberStr);
 			strcat(fileName, ".bmp");
 			bool bSuccess = imwrite(fileName, frame);
-			if (!bSuccess) 
+			if (!bSuccess)
 			{
 				printf("Error writing the snapped image\n");
 			}
@@ -359,13 +360,13 @@ void MyCallBackFunc(int event, int x, int y, int flags, void* param)
 	//More examples: http://opencvexamples.blogspot.com/2014/01/detect-mouse-clicks-and-moves-on-image.html
 	Mat* src = (Mat*)param;
 	if (event == CV_EVENT_LBUTTONDOWN)
-		{
-			printf("Pos(x,y): %d,%d  Color(RGB): %d,%d,%d\n",
-				x, y,
-				(int)(*src).at<Vec3b>(y, x)[2],
-				(int)(*src).at<Vec3b>(y, x)[1],
-				(int)(*src).at<Vec3b>(y, x)[0]);
-		}
+	{
+		printf("Pos(x,y): %d,%d  Color(RGB): %d,%d,%d\n",
+			x, y,
+			(int)(*src).at<Vec3b>(y, x)[2],
+			(int)(*src).at<Vec3b>(y, x)[1],
+			(int)(*src).at<Vec3b>(y, x)[0]);
+	}
 }
 
 void testMouseClick()
@@ -405,9 +406,9 @@ void showHistogram(const std::string& name, int* hist, const int  hist_cols, con
 
 	//computes histogram maximum
 	int max_hist = 0;
-	for (int i = 0; i<hist_cols; i++)
-	if (hist[i] > max_hist)
-		max_hist = hist[i];
+	for (int i = 0; i < hist_cols; i++)
+		if (hist[i] > max_hist)
+			max_hist = hist[i];
 	double scale = 1.0;
 	scale = (double)hist_height / max_hist;
 	int baseline = hist_height - 1;
@@ -434,8 +435,8 @@ void bitImage() {
 		float average = Average(src);
 		float deviation = Deviation(src, average);
 		int k1 = 1, k2 = -1;
-		int threshold = (int)(k1*average+k2*deviation);
-	
+		int threshold = (int)(k1 * average + k2 * deviation);
+
 
 		for (int i = 0; i < height; i++)
 			for (int j = 0; j < width; j++) {
@@ -484,7 +485,7 @@ float Average(Mat src) {
 		for (int j = 0; j < width; j++) {
 			sum += src.at<uchar>(i, j);
 		}
-	return (float)sum/(float)(height*width);
+	return (float)sum / (float)(height * width);
 }
 
 float Deviation(Mat src, float avr) {
@@ -493,12 +494,12 @@ float Deviation(Mat src, float avr) {
 	int width = src.cols;
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
-			sum += (src.at<uchar>(i, j)-avr)* (src.at<uchar>(i, j) - avr);
+			sum += (src.at<uchar>(i, j) - avr) * (src.at<uchar>(i, j) - avr);
 		}
 
 	return sqrt(sum / (float)(height * width));
 }
-void fill_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, int i, int j, int trashold=100)
+void fill_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, int i, int j, int trashold = 100)
 {
 
 	int is = Structural.rows / 2;
@@ -513,10 +514,10 @@ void fill_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural, 
 
 			if (Structural.at<uchar>(is + i2, js + j2) <= trashold)
 				if (i + i2 >= 0 && j + j2 >= 0 && i + i2 < OriginalImage.rows && j + j2 < OriginalImage.cols)
-				minimum = min(minimum, OriginalImage.at<uchar>(i + i2, j + j2));
+					minimum = min(minimum, OriginalImage.at<uchar>(i + i2, j + j2));
 
 		}
-	(*DestinationOmage).at<uchar>(i,j) = minimum;
+	(*DestinationOmage).at<uchar>(i, j) = minimum;
 }
 
 
@@ -529,8 +530,8 @@ void check_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural,
 	int js = Structural.cols / 2;
 
 	int maxim = -1;
-//	if (OriginalImage.at<uchar>(i, j) > trashold)
-	//	return;
+	//	if (OriginalImage.at<uchar>(i, j) > trashold)
+		//	return;
 
 	for (int i2 = -Structural.rows / 2; i2 < Structural.rows / 2; i2++)
 		for (int j2 = -Structural.cols / 2; j2 < Structural.cols / 2; j2++)
@@ -540,8 +541,8 @@ void check_neighbours2(Mat OriginalImage, Mat* DestinationOmage, Mat Structural,
 			if (i + i2 < 0 || j + j2 < 0 || i + i2 >= OriginalImage.rows || j + j2 >= OriginalImage.cols)
 				continue;
 			else
-		if(Structural.at<uchar>(is+i2,js+j2)< trashold)
-		    maxim = max(OriginalImage.at<uchar>(i + i2, j + j2), maxim);
+				if (Structural.at<uchar>(is + i2, js + j2) < trashold)
+					maxim = max(OriginalImage.at<uchar>(i + i2, j + j2), maxim);
 
 
 
@@ -570,8 +571,8 @@ void dilatarea(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int 
 		for (int j = 0; j < imgA.cols; j++)
 			fill_neighbours2(imgA, ImgDestination, imgB, i, j, trashold);
 
-//	imshow("before dilatation", imgA);
-//	imshow("dilatated", (*ImgDestination));
+	//	imshow("before dilatation", imgA);
+	//	imshow("dilatated", (*ImgDestination));
 
 }
 
@@ -581,9 +582,9 @@ void dilatarea2(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int
 
 	(*ImgDestination) = Mat(imgA.rows, imgA.cols, CV_8UC1);
 
-//	for (int i = 0; i < imgA.rows; i++)
-//		for (int j = 0; j < imgA.cols; j++)
-//			(*ImgDestination).at<uchar>(i, j) = fundal;
+	//	for (int i = 0; i < imgA.rows; i++)
+	//		for (int j = 0; j < imgA.cols; j++)
+	//			(*ImgDestination).at<uchar>(i, j) = fundal;
 
 
 	for (int i = 0; i < imgA.rows; i++)
@@ -603,7 +604,7 @@ void eroziunea(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int 
 {
 
 	(*ImgDestination) = Mat(imgA.rows, imgA.cols, CV_8UC1);
-   for (int i = 0; i < imgA.rows; i++)
+	for (int i = 0; i < imgA.rows; i++)
 		for (int j = 0; j < imgA.cols; j++)
 			(*ImgDestination).at<uchar>(i, j) = fundal;
 
@@ -629,9 +630,9 @@ void eroziunea2(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int
 		for (int j = 0; j < imgA.cols; j++)
 			check_neighbours2(imgA, ImgDestination, imgB, i, j, trashold, object);
 
-//	imshow("before erosion", imgA);
-//	imshow("before erosion", imgB);
-//	imshow("eroted", *ImgDestination);
+	//	imshow("before erosion", imgA);
+	//	imshow("before erosion", imgB);
+	//	imshow("eroted", *ImgDestination);
 
 }
 
@@ -644,9 +645,9 @@ void scadere(Mat ImgA, Mat ImgB, Mat* diff, int trashold = 100, int fundal = 255
 	for (int i = 0; i < ImgA.rows; i++)
 		for (int j = 0; j < ImgA.cols; j++)
 		{
-		   // if(ImgA.at<uchar>(i, j)> ImgB.at<uchar>(i, j))
-		     
-				(*diff).at<uchar>(i, j)  =128- abs((int)ImgA.at<uchar>(i, j)- (int)ImgB.at<uchar>(i, j));
+			// if(ImgA.at<uchar>(i, j)> ImgB.at<uchar>(i, j))
+
+			(*diff).at<uchar>(i, j) = 128 - abs((int)ImgA.at<uchar>(i, j) - (int)ImgB.at<uchar>(i, j));
 
 
 
@@ -666,9 +667,9 @@ void inchidere(Mat ImgA, Mat Satructural, Mat* Inchidere, int trashhold = 100, i
 	dilatarea(ImgA, Satructural, &ImgDilatation, trashhold, fundal, object);
 	eroziunea(ImgDilatation, Satructural, &ImgErosion, trashhold, fundal, object);
 
-//	imshow("before inchidere A", ImgA);
-//	imshow("before dinchidere B", Satructural);
-//	imshow("inchidere", ImgErosion);
+	//	imshow("before inchidere A", ImgA);
+	//	imshow("before dinchidere B", Satructural);
+	//	imshow("inchidere", ImgErosion);
 	(*Inchidere) = ImgErosion;
 }
 void inchidere2(Mat ImgA, Mat Satructural, Mat* Inchidere, int trashhold = 100, int fundal = 255, int object = 0)
@@ -696,9 +697,9 @@ void deschidere(Mat ImgA, Mat Satructural, Mat* Deschidere, int trashhold = 100,
 	eroziunea(ImgA, Satructural, &ImgErosion, trashhold, fundal, object);
 	dilatarea(ImgErosion, Satructural, &ImgDilatation, trashhold, fundal, object);
 
-//	imshow("before deschidere A", ImgA);
-//	imshow("before dinchidere B", Satructural);
-//	imshow("deschidere", ImgDilatation);
+	//	imshow("before deschidere A", ImgA);
+	//	imshow("before dinchidere B", Satructural);
+	//	imshow("deschidere", ImgDilatation);
 	(*Deschidere) = ImgDilatation;
 
 }
@@ -722,7 +723,6 @@ void paintNeighbors(Mat* src2, int i, int j) {
 	int height = src2->rows;
 	int width = src2->cols;
 	int aux1 = 1;
-
 	for (int k = -aux1; k <= aux1; ++k)
 		for (int r = -aux1; r <= aux1; ++r) {
 			if (i + k >= 0 && i + k < height && j + r >= 0 && j + r < width) {
@@ -730,51 +730,41 @@ void paintNeighbors(Mat* src2, int i, int j) {
 			}
 		}
 }
-
 void dilatare1(Mat src, Mat * src2) {
 	int height = src.rows;
 	int width = src.cols;
 	int maxValue = 220;
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
 			src2->at<uchar>(i, j) = 255;
 		}
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
-
 			if (src.at<uchar>(i, j) < maxValue) {
 				paintNeighbors(src2, i, j);
 			}
 		}
 }
-
 void dilatare() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-	
+
 	Mat src2 = src.clone();
 	bitImage1(src, &src2);
-	
+
 	Mat src3 = src.clone();
 	dilatare1(src2, &src3);
-
 	imshow("Initial Image", src);
 	imshow("bitImage", src2);
 	imshow("dilatare", src3);
 	waitKey(0);
 }
-
-
-
 bool checkNeighbors(Mat* src2, int i, int j) {
 	int height = src2->rows;
 	int width = src2->cols;
 	int maxValue = 220;
 	int aux1 = 1;
-
 	for (int k = -aux1; k <= aux1; ++k)
 		for (int r = -aux1; r <= aux1; ++r) {
 			if (i + k >= 0 && i + k < height && j + r >= 0 && j + r < width) {
@@ -784,21 +774,16 @@ bool checkNeighbors(Mat* src2, int i, int j) {
 		}
 	return true;
 }
-
 void eroziunea1(Mat src, Mat* src2) {
 	int height = src.rows;
 	int width = src.cols;
 	int maxValue = 220;
-
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
 			src2->at<uchar>(i, j) = 255;
 		}
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
-
 			if (src.at<uchar>(i, j) < maxValue) {
 				if (checkNeighbors(&src, i, j)) {
 					src2->at<uchar>(i, j) = 0;
@@ -806,87 +791,62 @@ void eroziunea1(Mat src, Mat* src2) {
 			}
 		}
 }
-
 void eroziunea() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-
 	Mat src2 = src.clone();
 	bitImage1(src, &src2);
-
 	Mat src3 = src.clone();
 	eroziunea1(src2, &src3);
-
 	imshow("Initial Image", src);
 	imshow("bitImage", src2);
 	imshow("eroziune", src3);
 	waitKey(0);
 }
-
-
-
 void deschiderea() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-	
+
 	Mat src1 = src.clone();
 	bitImage1(src, &src1);
 	Mat src2 = src.clone();
 	Mat src3 = src.clone();
-
 	eroziunea1(src1, &src2);
 	dilatare1(src2, &src3);
-
 	imshow("Initial Image", src);
 	imshow("bitImage", src1);
 	imshow("deschidere", src3);
 	waitKey(0);
 }
-
 void inchiderea() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-
 	Mat src1 = src.clone();
 	bitImage1(src, &src1);
 	Mat src2 = src.clone();
 	Mat src3 = src.clone();
-
-
 	dilatare1(src1, &src2);
 	eroziunea1(src2, &src3);
-
 	imshow("Initial Image", src);
 	imshow("bitImage", src1);
 	imshow("inchidere", src3);
 	waitKey(0);
 }
-
 void scadere(Mat src, Mat* src2, Mat* result) {
 	int height = src.rows;
 	int width = src.cols;
 	*result = src.clone();
 	int trashhold = 100;
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
-
 			if (src.at<uchar>() < trashhold && src2->at<uchar>(i, j) < trashhold) {
 				result->at<uchar>(i, j) = 255;
 			}
 		}
 }
-
-
-
-
-
-
-
-
 void extragereaConturului() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
@@ -895,13 +855,11 @@ void extragereaConturului() {
 	Mat src3 = src.clone();
 	eroziunea1(src, &src2);
 	scadere(src, &src2, &src3);
-
 	imshow("First Image", src);
 	imshow("eroziunea", src2);
 	imshow("scaderea", src3);
 	waitKey(0);
 }
-
 void extragereaConturului1(Mat src, Mat* src3) {
 	//char fname[MAX_PATH];
 	//openFileDlg(fname);
@@ -911,7 +869,6 @@ void extragereaConturului1(Mat src, Mat* src3) {
 	eroziunea1(src, &src2);
 	scadere(src, &src2, src3);
 }
-
 */
 void BuildStructuralElement8(int rows, int cols, Mat* Structural, int object = 0)
 {
@@ -1011,8 +968,8 @@ void TopHat2(Mat imgA, Mat imgB, Mat* ImgDestination, int trashold = 100, int fu
 	Mat Deschidere;
 	Mat Inchidere;
 	Mat Scadere;
-	
-    deschidere2(imgA, imgB, &Deschidere, trashold, fundal, 0);
+
+	deschidere2(imgA, imgB, &Deschidere, trashold, fundal, 0);
 	imshow("deshidere", Deschidere);
 	scadere(imgA, Deschidere, &Scadere, trashold, fundal, 0);
 	imshow("Scadere", Scadere);
@@ -1066,13 +1023,10 @@ void umplereaRegiunilor() {
 	char fname[MAX_PATH];
 	openFileDlg(fname);
 	Mat src = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
-
 	Mat* contur=NULL;/////
 	extragereaConturului1(src, contur);
-
 	Mat* complementContur=NULL;///
 	complement(*contur, complementContur);
-
 	Mat result = src.clone();
 	int height = src.rows;
 	int width = src.cols;
@@ -1080,44 +1034,55 @@ void umplereaRegiunilor() {
 		for (int j = 0; j < width; j++) {
 			result.at<uchar>(i, j) = 255;
 		}
-
 	for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++) {
 			result.at<uchar>(i, j) = 255;
 		}
 }
-
 */
 #include<queue>
 
-void neighbours(Mat img, int i, int j, std::queue<int>* Qi, std::queue<int>* Qj, Mat* labels,int label)
+void neighbours(Mat img, int i, int j, std::queue<int>* Qi, std::queue<int>* Qj, Mat* labels, int label)
 {
-	
-	for(int k=-1;k<=1;k++)
+
+	for (int k = -1; k <= 1; k++)
 		for (int l = -1; l <= 1; l++)
-		{    if(k!=0 || l!=0)
-			if (i + k < img.rows && i + k >= 0 && j + l < img.cols && j + l >= 0)
-			{
-				if (img.at<uchar>(i + k, j + l) == 255 && (*labels).at<unsigned short>(i + k, j + l) == 0)
+		{
+			if (k != 0 || l != 0)
+				if (i + k < img.rows && i + k >= 0 && j + l < img.cols && j + l >= 0)
 				{
-					(*labels).at<unsigned short>(i + k, j + l) = label;
-					(*Qi).push(i + k);
-					(*Qj).push(j + l);
+					if (img.at<uchar>(i + k, j + l) == 255 && (*labels).at<unsigned short>(i + k, j + l) == 0)
+					{
+						(*labels).at<unsigned short>(i + k, j + l) = label;
+						(*Qi).push(i + k);
+						(*Qj).push(j + l);
+					}
 				}
-			}
 		}
 
 }
-typedef struct 
+typedef struct
 {
 	int label;
-    int count;
+	int count;
 
 
 }object;
 
+void oneObject(Mat labels, int label, Mat* Object) {
+	(*Object) = Mat(labels.rows, labels.cols, CV_8UC1);
+	for (int i = 0; i < labels.rows; i++)
+		for (int j = 0; j < labels.cols; j++)
+			(*Object).at<uchar>(i, j) = 0;
 
-void etichetare(Mat img, Mat* labels)
+	for (int i = 0; i < labels.rows; i++)
+		for (int j = 0; j < labels.cols; j++)
+			if (labels.at<unsigned short>(i, j) == label)
+				(*Object).at<uchar>(i, j) = 255;
+
+}
+
+int etichetare(Mat img, Mat* labels)
 {
 	int label = 0;
 	(*labels) = Mat(img.rows, img.cols, CV_16UC1);
@@ -1142,15 +1107,15 @@ void etichetare(Mat img, Mat* labels)
 					int qj = Qj.front();
 					Qi.pop();
 					Qj.pop();
-					
+
 					neighbours(img, qi, qj, &Qi, &Qj, labels, label);
-				
+
 				}
 			}
 
 
 	printf("labels %d", label);
-	std::vector<object> objects;
+	/*std::vector<object> objects;
 	for (int k = 1; k <= label; k++)
 	{
 		printf("%d\n", k);
@@ -1172,7 +1137,7 @@ void etichetare(Mat img, Mat* labels)
 
 	int maxime[30] = { 0 };
 	int maxlabel[30] = { 0 };
-	  
+
 	for (int i = 0; i < objects.size(); i++)
 	{
 		int assigned = 0;
@@ -1181,14 +1146,14 @@ void etichetare(Mat img, Mat* labels)
 		{
 			if (objects.at(i).count > maxime[index])
 			{
-				
+
 				for (int k = 28; k >= index; k--)
 				{
 					maxime[k + 1] = maxime[k];
 					maxlabel[k + 1] = maxlabel[k];
 				}
-				 maxime[index] = objects.at(i).count;
-				 maxlabel[index] = objects.at(i).label;
+				maxime[index] = objects.at(i).count;
+				maxlabel[index] = objects.at(i).label;
 				assigned = 1;
 			}
 			else
@@ -1199,100 +1164,272 @@ void etichetare(Mat img, Mat* labels)
 	{
 		printf("maxim %d with label %d and count %d \n", i, maxlabel[i], maxime[i]);
 
-    }
-		printf("object with maximum size label %d ,and count %d\n", maxlabel[0], maxime[0]);
-		Mat clone=Mat(img.rows, img.cols, CV_8UC1);
-		for (int i = 0; i < img.rows; i++)
-			for (int j = 0; j < img.cols; j++)
-				clone.at<uchar>(i, j) = 0;
-		for (int i = 0; i < img.rows; i++)
-			for (int j = 0; j < img.cols; j++)
-			{
-				for(int k=0;k<5;k++)
+	}
+	printf("object with maximum size label %d ,and count %d\n", maxlabel[0], maxime[0]);
+	Mat clone = Mat(img.rows, img.cols, CV_8UC1);
+	for (int i = 0; i < img.rows; i++)
+		for (int j = 0; j < img.cols; j++)
+			clone.at<uchar>(i, j) = 0;
+	for (int i = 0; i < img.rows; i++)
+		for (int j = 0; j < img.cols; j++)
+		{
+			for (int k = 0; k < 5; k++)
 				if ((*labels).at<unsigned short>(i, j) == maxlabel[k])
 				{
 					clone.at<uchar>(i, j) = 255;
 				}
+		}
+
+	imshow("objects", clone);
+	Mat Object;
+	oneObject(*labels, maxlabel[0], &Object);*/
+
+	//imshow("object", Object);
+	return label;
+}
+
+float aria(Mat_<uchar> img) {
+	Mat_<Vec3b> dst_color(img.rows, img.cols);
+	//calcul arie
+	int arie = 0;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			if (img(i, j) == 255)
+				arie++;
+		}
+	}
+	printf("Aria: %d\n", arie);
+	return arie;
+}
+
+void CM(Mat_<uchar> img, double* ri, double* ci, float arie) {
+	* ri = 0;
+	* ci = 0;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			if (img(i, j) == 255) {
+				*ri = *ri + i;
+				*ci = *ci + j;
 			}
+		}
+	}
+	*ri = *ri / (double)arie;
+	*ci = *ci / (double)arie;
+	printf("Centrul de masa: (%lf,%lf)\n", *ri, *ci);
+	
+}
 
-		imshow("object", clone);
-
+float axaAlungire(Mat_<uchar> img, double ri, double ci) {
+	double termen1 = 0.0;
+	double termen2 = 0.0;
+	double termen3 = 0.0;
+	double termen = 0.0;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			termen1 = termen1 + ((i - ri) * (j - ci));
+			termen2 = termen2 + ((j - ci) * (j - ci));
+			termen3 = termen3 + ((i - ri) * (i - ri));
+		}
+	}
+	termen1 = 2 * termen1;
+	termen = termen2 - termen3;
+	double unghi = 0.0;
+	unghi = atan2(termen1, termen) / 2;
+	return unghi;
 
 }
+
+float Perimetru(Mat_<uchar> img) {
+	double p = 0;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			if (img(i, j) == 255)
+				if ((i - 1) >= 0 && img(i - 1, j) != 255)
+					p++;
+				else
+					if ((i + 1) < img.rows && img(i + 1, j) != 255)
+						p++;
+					else
+						if ((j - 1) >= 0 && img(i, j - 1) != 255)
+							p++;
+						else
+							if ((j+1)<img.cols && img(i, j + 1) != 255)
+								p++;
+					
+		}
+	}
+	printf("Perimetrul: %lf \n", p);
+	return p;
+}
+
+float factorSubtiere(Mat_<uchar> img) {
+	float arie = aria(img);
+	float p = Perimetru(img);
+	double t = 4 * PI * arie / (p * p);
+	printf("Factorul de subtiere: %lf \n", t);
+	return t;
+}
+
+float elongatia(Mat_<uchar> img) {
+	int c_min = img.cols;
+	int r_min = img.rows;
+	int r_max = -1;
+	int c_max = -1;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			if (img(i, j) == 255) {
+				if (j < c_min)
+					c_min = j;
+				if (i < r_min)
+					r_min = i;
+				if (i > r_max)
+					r_max = i;
+				if (j > c_max)
+					c_max = j;
+			}
+		}
+	}
+	double elongatia = (double)(c_max - c_min + 1) / (r_max - r_min + 1);
+	printf("Elongatia: %lf \n", elongatia);
+	return elongatia;
+}
+
+void proiectii(Mat_<uchar> img, int** hp, int **vp) {
+	* hp = (int*)calloc(img.rows, sizeof(int));
+	* vp = (int*)calloc(img.cols, sizeof(int));
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			if (img(i, j) == 255) {
+				(*hp)[i]++;
+				(*vp)[j]++;
+			}
+		}
+	}
+}
+
+void findLines(Mat img) {
+	Mat labels;
+	int label = 0;
+	label = etichetare(img, &labels);
+	std::vector<object> objects;
+	std::vector<int> lineLabels;
+	for (int k = 1; k <= label; k++)
+	{
+		Mat Object;
+		oneObject(labels, k, &Object);
+		float a = aria(Object);
+		if (a > 100) {
+			if (factorSubtiere(Object) < 0.5) {
+				/*int* vp, * hp;
+				proiectii(Object, &vp, &hp);
+				int maxh=0, maxw=0;
+				for (int i = 0; i < Object.rows; i++)
+					maxh = max(maxh, hp[i]);
+				for (int j = 0; j < Object.cols; j++)
+					maxw = max(maxw, vp[j]);*/
+				//if(maxh>25 || maxw>25)
+					lineLabels.push_back(k);
+			}
+		}
+	}
+
+	Mat lines = Mat(labels.rows, labels.cols, CV_8UC1);
+	for (int i = 0; i < labels.rows; i++)
+		for (int j = 0; j < labels.cols; j++)
+			lines.at<uchar>(i, j) = 0;
+
+	for (int m = 0; m < lineLabels.size(); m++)
+	{
+		for (int i = 0; i < labels.rows; i++)
+			for (int j = 0; j < labels.cols; j++)
+				if (labels.at<unsigned short>(i, j) == lineLabels.at(m))
+					lines.at<uchar>(i, j) = 255;
+	}
+
+	imshow("lines", lines);
+
+}
+
+
 
 int main()
 {
 	int op;
 	int ce;
-	int imgRows =8;
-	int imgCols =8;
+	int imgRows = 8;
+	int imgCols = 8;
 	Mat Original;
 	Mat ElementStructural;
-	printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
+	/*printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
 	scanf("%d", &ce);
-	if(ce==1)
-   BuildStructuralElement4(imgRows, imgCols, &ElementStructural);
+	if (ce == 1)
+		BuildStructuralElement4(imgRows, imgCols, &ElementStructural);
 	else
-	if(ce==2)
-   BuildStructuralElement8(imgRows, imgCols, &ElementStructural);
+		if (ce == 2)
+			BuildStructuralElement8(imgRows, imgCols, &ElementStructural);*/
 
-		char fname[MAX_PATH];
-		while (openFileDlg(fname))
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+
+		Original = imread(fname, IMREAD_GRAYSCALE);
+		imshow("image", Original);
+		waitKey();
+
+		system("cls");
+		printf("1 TopHat pipeline\n");
+		printf("2 BottomHat pipeline\n");
+		//scanf("%d", &op);
+		op = 1;
+		Mat Transformed;
+		Mat Transformed2;
+		Mat Transformed3;
+		Mat Binarised;
+		if (op == 1)
 		{
 
-			Original = imread(fname, IMREAD_GRAYSCALE);
-			imshow("image", Original);
-			waitKey();
 
-			system("cls");
-			printf("1 TopHat pipeline\n");
-			printf("2 BottomHat pipeline\n");
-			//scanf("%d", &op);
-			op = 1;
-			Mat Transformed;
-			Mat Transformed2;
-			Mat Transformed3;
-			Mat Binarised;
-			if (op == 1)
-			{
-				
-			     
-				//eroziunea2(Original, ElementStructural, &Transformed);
-				Mat ElementStructural2;
-				Mat ElementStructural3;
-				BuildStructuralElement8(5, 5, &ElementStructural2);
-				TopHat2(Original, ElementStructural, &Transformed);
-		 
+			//eroziunea2(Original, ElementStructural, &Transformed);
+			Mat ElementStructural2;
+			Mat ElementStructural3;
+			Mat ElementStructural4;
+			BuildStructuralElement8(7, 7, &ElementStructural2);
+			TopHat2(Original, ElementStructural2, &Transformed);
+
 			//TopHat2(Transformed, ElementStructural, &Transformed3);
 			//(Original, ElementStructural, &Transformed2);
-		    	BuildStructuralElement8(7, 7, &ElementStructural3);
-				dilatarea2(Transformed, ElementStructural3, &Transformed3);   TopHat2(Original, ElementStructural, &Transformed);
-				eroziunea2(Transformed3, ElementStructural3, &Transformed2);
-				bitImage1(Transformed, &Binarised);
-			 // TopHat(Transformed2, ElementStructural2, &Transformed3);
-			
-				imshow("original", Original);
-				imshow("top hat", Transformed);
-				imshow("binarized", Binarised);
+			BuildStructuralElement8(3, 3, &ElementStructural3);
+			BuildStructuralElement8(3, 3, &ElementStructural4);
+			eroziunea2(Transformed, ElementStructural3, &Transformed2);
+			imshow("test1", Transformed2);
+			dilatarea2(Transformed2, ElementStructural4, &Transformed3);   //TopHat2(Original, ElementStructural, &Transformed);
+			//eroziunea2(Transformed3, ElementStructural3, &Transformed2);
+			imshow("test2", Transformed3);
+			bitImage1(Transformed3, &Binarised);
+			// TopHat(Transformed2, ElementStructural2, &Transformed3);
 
-				Mat labels;
-				etichetare(Binarised, &labels);
+			imshow("original", Original);
+			imshow("top hat", Transformed);
+			imshow("binarized", Binarised);
+
+			Mat labels;
+			findLines(Binarised);
 
 
 
-			}
-			else
+		}
+		else
 			if (op == 2)
 			{
 
-				
+
 				//inchidere2(Original, ElementStructural, &Transformed);
 				//eroziunea2(Transformed, ElementStructural, &Transformed2);
 				bitImage1(Transformed, &Binarised);
 				imshow("original", Original);
 				imshow("bottom hat", Transformed);
 				imshow("binarized", Binarised);
-			 }
+			}
 		/*	int op2;
 			printf("1 Inchidere\n");
 			printf("2 Deschidere\n");
@@ -1311,15 +1448,12 @@ int main()
 				deschidere(Binarised, ElementStructural, &Deschidere);
 				imshow("opened", Deschidere);
 				waitKey();
-
-
 			}
+		 */
+		waitKey();
 
-         */
-			waitKey();
 
-
-		}
+	}
 
 	return 0;
 }
