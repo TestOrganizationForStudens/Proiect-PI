@@ -1198,7 +1198,7 @@ float aria(Mat_<uchar> img) {
 				arie++;
 		}
 	}
-	printf("Aria: %d\n", arie);
+	//printf("Aria: %d\n", arie);
 	return arie;
 }
 
@@ -1215,7 +1215,7 @@ void CM(Mat_<uchar> img, double* ri, double* ci, float arie) {
 	}
 	*ri = *ri / (double)arie;
 	*ci = *ci / (double)arie;
-	printf("Centrul de masa: (%lf,%lf)\n", *ri, *ci);
+	//printf("Centrul de masa: (%lf,%lf)\n", *ri, *ci);
 	
 }
 
@@ -1258,7 +1258,7 @@ float Perimetru(Mat_<uchar> img) {
 					
 		}
 	}
-	printf("Perimetrul: %lf \n", p);
+	//printf("Perimetrul: %lf \n", p);
 	return p;
 }
 
@@ -1266,7 +1266,7 @@ float factorSubtiere(Mat_<uchar> img) {
 	float arie = aria(img);
 	float p = Perimetru(img);
 	double t = 4 * PI * arie / (p * p);
-	printf("Factorul de subtiere: %lf \n", t);
+	//printf("Factorul de subtiere: %lf \n", t);
 	return t;
 }
 
@@ -1290,7 +1290,7 @@ float elongatia(Mat_<uchar> img) {
 		}
 	}
 	double elongatia = (double)(c_max - c_min + 1) / (r_max - r_min + 1);
-	printf("Elongatia: %lf \n", elongatia);
+	//printf("Elongatia: %lf \n", elongatia);
 	return elongatia;
 }
 
@@ -1307,37 +1307,38 @@ void proiectii(Mat_<uchar> img, int** hp, int **vp) {
 	}
 }
 
-void findLines(Mat img) {
+void findLines(Mat img, Mat &artefacts, Mat &lines) {
 	Mat labels;
 	int label = 0;
 	label = etichetare(img, &labels);
 	std::vector<object> objects;
 	std::vector<int> lineLabels;
+	std::vector<int> artefactsLabels;
 	for (int k = 1; k <= label; k++)
 	{
 		Mat Object;
 		oneObject(labels, k, &Object);
 		float a = aria(Object);
 		if (a > 100) {
-			if (factorSubtiere(Object) < 0.5) {
-				/*int* vp, * hp;
-				proiectii(Object, &vp, &hp);
-				int maxh=0, maxw=0;
-				for (int i = 0; i < Object.rows; i++)
-					maxh = max(maxh, hp[i]);
-				for (int j = 0; j < Object.cols; j++)
-					maxw = max(maxw, vp[j]);*/
-				//if(maxh>25 || maxw>25)
-					lineLabels.push_back(k);
+			if (factorSubtiere(Object) < 0.19) {
+				lineLabels.push_back(k);
 			}
+			else
+				artefactsLabels.push_back(k);
+
 		}
+		else
+			artefactsLabels.push_back(k);
 	}
 
-	Mat lines = Mat(labels.rows, labels.cols, CV_8UC1);
+	 lines = Mat(labels.rows, labels.cols, CV_8UC1);
+	 artefacts = Mat(labels.rows, labels.cols, CV_8UC1);
 	for (int i = 0; i < labels.rows; i++)
-		for (int j = 0; j < labels.cols; j++)
+		for (int j = 0; j < labels.cols; j++) {
 			lines.at<uchar>(i, j) = 0;
-
+			artefacts.at<uchar>(i, j) = 0;
+		}
+			
 	for (int m = 0; m < lineLabels.size(); m++)
 	{
 		for (int i = 0; i < labels.rows; i++)
@@ -1346,7 +1347,13 @@ void findLines(Mat img) {
 					lines.at<uchar>(i, j) = 255;
 	}
 
-	imshow("lines", lines);
+		for (int m = 0; m < artefactsLabels.size(); m++)
+	    {
+		for (int i = 0; i < labels.rows; i++)
+			for (int j = 0; j < labels.cols; j++)
+				if (labels.at<unsigned short>(i, j) == artefactsLabels.at(m))
+					artefacts.at<uchar>(i, j) = 255;
+	    }
 
 }
 
@@ -1360,6 +1367,8 @@ int main()
 	int imgCols = 8;
 	Mat Original;
 	Mat ElementStructural;
+	Mat lines;
+	Mat artefacts;
 	/*printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
 	scanf("%d", &ce);
 	if (ce == 1)
@@ -1413,7 +1422,9 @@ int main()
 			imshow("binarized", Binarised);
 
 			Mat labels;
-			findLines(Binarised);
+			findLines(Binarised, artefacts, lines);
+			imshow("lines", lines);
+			imshow("artefacts", artefacts);
 
 
 
