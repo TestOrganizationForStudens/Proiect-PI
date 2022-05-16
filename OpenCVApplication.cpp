@@ -1357,113 +1357,105 @@ void findLines(Mat img, Mat &artefacts, Mat &lines) {
 
 }
 
+uchar calculateNewTrashold(Mat src, Mat lines) {
+	int rows = src.rows;
+	int cols = src.cols;
+
+	int newTrashold = 0;
+	int numberOfPixels = 0;
+	uchar maxim = 0;
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			if (lines.at<uchar>(i, j)==255) {
+				maxim=max(maxim, src.at<uchar>(i, j));
+				//newTrashold += src.at<uchar>(i, j);
+				//numberOfPixels++;
+			}
+		}
+	}
+
+	return maxim;
+	//return (newTrashold / numberOfPixels) +20;
+}
+
+void pipelineFunction(Mat src, Mat& Transformed3) {
+
+	Mat ElementStructural;
+	Mat Transformed;
+	Mat Transformed2;
+	//Mat Transformed3;
+	
+
+	Mat ElementStructural2;
+	Mat ElementStructural3;
+	Mat ElementStructural4;
+
+	BuildStructuralElement8(7, 7, &ElementStructural2);
+	BuildStructuralElement8(3, 3, &ElementStructural3);
+	BuildStructuralElement8(3, 3, &ElementStructural4);
+
+	TopHat2(src, ElementStructural2, &Transformed);
+	eroziunea2(Transformed, ElementStructural3, &Transformed2);
+	dilatarea2(Transformed2, ElementStructural4, &Transformed3); 
+	
+	imshow("eroziune", Transformed2);
+	imshow("dilatare dupa eroziune", Transformed3);
+	imshow("original", src);
+	imshow("top hat", Transformed);
+}
+
+void bitImage2(Mat Original, Mat *BitIMG, uchar trashold) {
+	*BitIMG = Original.clone();
+	int height = Original.rows;
+	int width = Original.cols;
+
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			if (Original.at<uchar>(i, j) <= trashold) {
+				BitIMG->at<uchar>(i, j) = 255;
+			}
+			else {
+				BitIMG->at<uchar>(i, j) = 0;
+			}
+		}
+}
+
 
 
 int main()
 {
-	int op;
-	int ce;
-	int imgRows = 8;
-	int imgCols = 8;
-	Mat Original;
-	Mat ElementStructural;
+	Mat Original, Transformed3;
 	Mat lines;
 	Mat artefacts;
-	/*printf("Element Structural n4 alege 1 sau Element Structural n8 alege 2\n");
-	scanf("%d", &ce);
-	if (ce == 1)
-		BuildStructuralElement4(imgRows, imgCols, &ElementStructural);
-	else
-		if (ce == 2)
-			BuildStructuralElement8(imgRows, imgCols, &ElementStructural);*/
+	Mat Binarised, BitIMG;
 
 	char fname[MAX_PATH];
 	while (openFileDlg(fname))
 	{
-
 		Original = imread(fname, IMREAD_GRAYSCALE);
-		imshow("image", Original);
+		pipelineFunction( Original, Transformed3);
+
+		bitImage1(Transformed3, &Binarised);
+
+		findLines(Binarised, artefacts, lines);
+
+		imshow("binarized", Binarised);
+		imshow("lines", lines);
+		imshow("artefacts", artefacts);
 		waitKey();
 
-		system("cls");
-		printf("1 TopHat pipeline\n");
-		printf("2 BottomHat pipeline\n");
-		//scanf("%d", &op);
-		op = 1;
-		Mat Transformed;
-		Mat Transformed2;
-		Mat Transformed3;
-		Mat Binarised;
-		if (op == 1)
-		{
+		uchar newTrashold = calculateNewTrashold(Original, lines);
+		printf("Trashold %d\n", newTrashold);
 
+		//bitImage1(Transformed3, &BitIMG);
+		bitImage2(Transformed3, &BitIMG, newTrashold);
+		//findLines(BitIMG, artefacts, lines);
 
-			//eroziunea2(Original, ElementStructural, &Transformed);
-			Mat ElementStructural2;
-			Mat ElementStructural3;
-			Mat ElementStructural4;
-			BuildStructuralElement8(7, 7, &ElementStructural2);
-			TopHat2(Original, ElementStructural2, &Transformed);
-
-			//TopHat2(Transformed, ElementStructural, &Transformed3);
-			//(Original, ElementStructural, &Transformed2);
-			BuildStructuralElement8(3, 3, &ElementStructural3);
-			BuildStructuralElement8(3, 3, &ElementStructural4);
-			eroziunea2(Transformed, ElementStructural3, &Transformed2);
-			imshow("test1", Transformed2);
-			dilatarea2(Transformed2, ElementStructural4, &Transformed3);   //TopHat2(Original, ElementStructural, &Transformed);
-			//eroziunea2(Transformed3, ElementStructural3, &Transformed2);
-			imshow("test2", Transformed3);
-			bitImage1(Transformed3, &Binarised);
-			// TopHat(Transformed2, ElementStructural2, &Transformed3);
-
-			imshow("original", Original);
-			imshow("top hat", Transformed);
-			imshow("binarized", Binarised);
-
-			Mat labels;
-			findLines(Binarised, artefacts, lines);
-			imshow("lines", lines);
-			imshow("artefacts", artefacts);
-
-
-
-		}
-		else
-			if (op == 2)
-			{
-
-
-				//inchidere2(Original, ElementStructural, &Transformed);
-				//eroziunea2(Transformed, ElementStructural, &Transformed2);
-				bitImage1(Transformed, &Binarised);
-				imshow("original", Original);
-				imshow("bottom hat", Transformed);
-				imshow("binarized", Binarised);
-			}
-		/*	int op2;
-			printf("1 Inchidere\n");
-			printf("2 Deschidere\n");
-			scanf("%d", &op2);
-			if (op2 == 1)
-			{
-				Mat Inchidere;
-				inchidere(Binarised, ElementStructural, &Inchidere);
-				imshow("closed", Inchidere);
-				waitKey();
-			}
-			else
-			if (op2 == 2)
-			{
-				Mat Deschidere;
-				deschidere(Binarised, ElementStructural, &Deschidere);
-				imshow("opened", Deschidere);
-				waitKey();
-			}
-		 */
+		imshow("binarized2", BitIMG);
+		//imshow("lines2", lines);
+		//imshow("artefacts2", artefacts);
 		waitKey();
-
-
 	}
 
 	return 0;
