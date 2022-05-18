@@ -1314,13 +1314,14 @@ void findLines(Mat img, Mat &artefacts, Mat &lines) {
 	std::vector<object> objects;
 	std::vector<int> lineLabels;
 	std::vector<int> artefactsLabels;
+
 	for (int k = 1; k <= label; k++)
 	{
 		Mat Object;
 		oneObject(labels, k, &Object);
 		float a = aria(Object);
 		if (a > 100) {
-			if (factorSubtiere(Object) < 0.19) {
+			if (factorSubtiere(Object) < 0.35) {
 				lineLabels.push_back(k);
 			}
 			else
@@ -1360,22 +1361,34 @@ void findLines(Mat img, Mat &artefacts, Mat &lines) {
 uchar calculateNewTrashold(Mat src, Mat lines) {
 	int rows = src.rows;
 	int cols = src.cols;
-
+	int vector[255] = { 0 };
 	int newTrashold = 0;
 	int numberOfPixels = 0;
 	uchar maxim = 0;
 
+	
+
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
 			if (lines.at<uchar>(i, j)==255) {
-				maxim=max(maxim, src.at<uchar>(i, j));
+				vector[src.at<uchar>(i, j)]++;
+				//maxim=max(maxim, src.at<uchar>(i, j));
 				//newTrashold += src.at<uchar>(i, j);
 				//numberOfPixels++;
 			}
 		}
 	}
 
-	return maxim;
+	uchar maximG = 0;
+
+	for (int i = 0; i < 256; ++i) {
+		if (vector[i]>maxim) {
+			maxim = vector[i];
+			maximG = i;
+		}
+	}
+
+	return maximG-2;
 	//return (newTrashold / numberOfPixels) +20;
 }
 
@@ -1391,7 +1404,7 @@ void pipelineFunction(Mat src, Mat& Transformed3) {
 	Mat ElementStructural3;
 	Mat ElementStructural4;
 
-	BuildStructuralElement8(7, 7, &ElementStructural2);
+	BuildStructuralElement8(50, 50, &ElementStructural2);
 	BuildStructuralElement8(3, 3, &ElementStructural3);
 	BuildStructuralElement8(3, 3, &ElementStructural4);
 
@@ -1406,6 +1419,7 @@ void pipelineFunction(Mat src, Mat& Transformed3) {
 }
 
 void bitImage2(Mat Original, Mat *BitIMG, uchar trashold) {
+	//imshow("Original function", Original);
 	*BitIMG = Original.clone();
 	int height = Original.rows;
 	int width = Original.cols;
@@ -1419,7 +1433,10 @@ void bitImage2(Mat Original, Mat *BitIMG, uchar trashold) {
 				BitIMG->at<uchar>(i, j) = 0;
 			}
 		}
+
+	//imshow("BITimg function", *BitIMG);
 }
+
 
 
 
@@ -1443,18 +1460,18 @@ int main()
 		imshow("binarized", Binarised);
 		imshow("lines", lines);
 		imshow("artefacts", artefacts);
-		waitKey();
+		//waitKey();
 
-		uchar newTrashold = calculateNewTrashold(Original, lines);
+		uchar newTrashold =  calculateNewTrashold(Transformed3, lines);
 		printf("Trashold %d\n", newTrashold);
 
 		//bitImage1(Transformed3, &BitIMG);
 		bitImage2(Transformed3, &BitIMG, newTrashold);
-		//findLines(BitIMG, artefacts, lines);
+		findLines(BitIMG, artefacts, lines);
 
 		imshow("binarized2", BitIMG);
-		//imshow("lines2", lines);
-		//imshow("artefacts2", artefacts);
+		imshow("lines2", lines);
+		imshow("artefacts2", artefacts);
 		waitKey();
 	}
 
